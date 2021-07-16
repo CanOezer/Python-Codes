@@ -1,0 +1,237 @@
+Anwendungsbeispiele zur Linearen Regression:
+
+Beispiel 1: Lineare Regression
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+
+
+warnings.filterwarnings(action="ignore", module="scipy", message="^internal gelsd")
+
+
+#--- Schritt 2: Datensatz laden ---
+
+covid_dataset = pd.read_csv('Covid-Data-Explorer_Neu.csv',sep=';')  # andere Möglichkeit: data_path = 'Covid-Data-Explorer_Neu.csv'
+
+
+#--- Schritt 3: Die ersten Zeilen vom Datensatz ausgeben, zur Veranschaulichung ---
+
+covid_dataset.head()
+
+
+#--- Schritt 4: Datensatz vorbereiten für das Modell, indem die verwendeten Daten in Trainigs- und Test-Daten gesplittet werden ---
+
+#covid_dataset.isnull().any()
+#covid_dataset.drop('Unnamed: 0', axis = 1, inplace = True)
+# covid_dataset.drop('Unnamed: 0', axis = 1, inplace = True)
+
+X = covid_dataset.iloc[:, :1].values
+y = covid_dataset.iloc[:, -1].values
+
+
+#--- Schritt 5: Der Datensatz wird nach dem Split trainiert ---
+
+X_train, X_test, y_train, y_test = train_test_split\
+    (X, y, test_size=0.25, random_state=0)
+
+
+#--- Schritt 6: Variablen "Fitten" --> Das Modell wird damit trainiert
+
+simple_lr = LinearRegression()
+simple_lr.fit(X_train, y_train)
+
+
+#--- Schritt 7: Das Modell wurde trainiert und damit kann ein Prediction Test durchgeführt werden (Einfache lineare Regression) ---
+
+y_pred = simple_lr.predict(X_test)
+print(y_pred)
+
+
+#--- Schritt 8: Diagramm editieren und Vorhersage mit den Trainingsdaten durchführen ---
+
+plt.scatter(X_train, y_train, color='r')
+plt.plot(X_train, simple_lr.predict(X_train), color='b')
+plt.title('Test mit Trainingsdaten')
+plt.xlabel('Tage')
+plt.ylabel('Fälle')
+plt.show()
+
+
+#--- Schritt 9: Und nun eine Vorhersage mit den Testdaten durchführen ---
+
+plt.scatter(X_test, y_test, color='r')
+plt.plot(X, simple_lr.predict(X), color='b')
+plt.title('Test mit Testdaten')
+plt.xlabel('Tage')
+plt.ylabel('Fälle')
+plt.show()
+
+
+#--- Schritt 10: Vorhersagen bewerten ---
+
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
+rmse = sqrt(mean_squared_error(y_test, y_pred))
+
+from sklearn.metrics import r2_score
+r2 = r2_score(y_test, y_pred)
+adj_r2 = 1 - float(len(y) - 1) / (len(y) - len(simple_lr.coef_) - 1) * (1 - r2)
+
+rmse, r2, adj_r2, simple_lr.coef_, simple_lr.intercept_
+
+print('Bestimmtheitsmaß: ', r2, 'Modell-Performance: ' , adj_r2, "\n",'Koeffizient: ', simple_lr.coef_)
+
+
+#--- Schritt 11: Vorhersage-Funktion ausgeben --> wie viele Fälle es nach bestimmten Tagen geben wird: ---
+
+tag = 20;
+X_variable = np.array([464 + tag]).reshape(1, 1)  
+#464 Tage sind seit Anfang der Pandemie vergangen (relevant für Datensatz, zum Ermitteln der Vorhersage in der Zukunft)
+print("Nach" , tag , "Tagen gibt es insgesamt", (simple_lr.predict(X_variable)), "Fälle")
+
+#round(int(simple_lr.predict([[464 - tag]]))/1000000,2)
+
+#simple_lr.predict(tag)
+
+
+genauigkeit = simple_lr.score(X, y)
+print("Die Genauigkeit der Vorhersage beträgt: " , genauigkeit)
+
+
+
+
+#--- Polynomiale Regression ---#
+
+polyFeat = PolynomialFeatures(degree=3) #je höher desto größer die Gefahr des Overclockings
+x = polyFeat.fit_transform(x)
+print(x)
+
+print('-'*20);
+
+#--- Daten "trainieren" (Train Data)---#
+
+model = linear_model.LinearRegression()
+model.fit(x,y)
+accuracy = model.score(x,y)
+print(f'Accuracy:{round(accuracy*100,3)}%')
+y0 = model.predict(x)
+sns.set()
+plt.plot(y0, '--b')
+plt.title("Corona Fallzahlen nach 464 Tagen")
+plt.xlabel('Tage')
+plt.ylabel('Fälle in mio.')
+#plt.show()
+print('-'*20);
+
+#--- Vorhersage für weiteren Verlauf (Prediction) ---#
+days = 5
+X_variable = np.array([464 + days]).reshape(1,1)
+print(f'Vorhersage - Fallzahlen nach {days} Tagen: ', end = '')
+print(int(model.predict(polyFeat.fit_transform(X_variable))))
+sns.set()
+plt.title("Corona Fallzahlen nach 464 Tagen")
+plt.xlabel('Tage')
+plt.ylabel('Fälle in mio.')
+plt.plot(y0,'--g')
+plt.show()
+
+
+
+#weiterer Verlauf der Kurve
+x1 = np.array(list(range(1, 464 + days))).reshape(-1,1)
+y1 = model.predict(polyFeat.fit_transform(x1))
+sns.set()
+plt.title("Corona Fallzahlen nach 464 Tagen")
+plt.xlabel('Tage')
+plt.ylabel('Fälle in mio.')
+plt.plot(y1, '--r')
+plt.plot(y0,'--b')
+plt.show()
+
+
+_______________________________________________________________________________
+
+
+Anwendungsbeispiele zur Clusteranalyse (Mit generierten Datensätzen):
+
+
+Beispiel 1:
+
+
+from idlelib import history
+
+from sklearn.datasets import make_blobs
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+
+
+X, y = make_blobs(n_samples=1500, centers=3,
+
+                  n_features=2, random_state=800)
+
+centroids = [[-6,2],[3,-4],[-5,10]]
+
+plt.scatter(X[:, 0], X[:, 1], s=50, cmap='tab20b')
+
+plt.show()
+
+plt.scatter(X[:, 0], X[:, 1], c=y,s=50, cmap='tab20b')
+
+plt.show()
+
+
+
+
+
+Beispiel 2:
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.cluster import KMeans
+
+data = make_blobs(n_samples=2000,
+                     centers = 4,
+                     n_features=2,
+                     cluster_std=1.5,
+                     random_state=500)
+
+print(data)
+
+points = data[0]
+
+kmeans = KMeans(n_clusters=4)
+kmeans.fit(points)
+
+
+plt.scatter(data[0][:,0], data[0][:,1])
+plt.show()
+
+
+clusters = kmeans.cluster_centers_
+print('Clusterschwerpunkte: \n ' , clusters)
+
+y_km = kmeans.fit_predict(points)
+
+plt.scatter(points[y_km == 0,0], points[y_km == 0,1], s=50, c='b')
+plt.scatter(points[y_km == 1,0], points[y_km == 1,1], s=50, c='g')
+plt.scatter(points[y_km == 2,0], points[y_km == 2,1], s=50, c='y')
+plt.scatter(points[y_km == 3,0], points[y_km == 3,1], s=50, c='r')
+
+
+plt.scatter(clusters[0,0], clusters[0][1], marker='*', s=100, c='black')
+plt.scatter(clusters[1,0], clusters[1][1], marker='*', s=100, c='black')
+plt.scatter(clusters[2,0], clusters[2][1], marker='*', s=100, c='black')
+plt.scatter(clusters[3,0], clusters[3][1], marker='*', s=100, c='black')
+
+plt.show()
+
+
